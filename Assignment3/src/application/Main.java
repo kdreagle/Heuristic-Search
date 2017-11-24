@@ -1,12 +1,19 @@
 package application;
 	
+import java.io.BufferedReader;
 import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.HashMap;
 import java.util.Random;
 import javafx.application.Application;
 import javafx.stage.Stage;
 import javafx.scene.Scene;
+import javafx.scene.control.Tooltip;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
@@ -16,48 +23,108 @@ public class Main extends Application {
 	
 	public static final int CELLSIZE = 8;
 	
+	public static final boolean UNIFORM_COST_SEARCH = true;
+	
+	public static final boolean A_STAR_SEARCH = false;
+	
 	public static int startX, startY, goalX, goalY;
 	
 	public static int[] hardX, hardY;
 	
 	public static char[][] grid;
 	
+	
 	@Override
-	public void start(Stage primaryStage) throws FileNotFoundException, UnsupportedEncodingException {
-			
-		BorderPane root = new BorderPane();
+	public void start(Stage primaryStage) throws IOException {
 		
 		// only needs to be run once
-		generateFile();
+		//generateFile();
 		
-		// read from the file here
+		// read first grid from file
+		BufferedReader br = new BufferedReader(new FileReader("grids.txt"));
+		try {
+		    String[] start = br.readLine().split(" ");
+		    
+		    startX = Integer.parseInt(start[0]);
+		    startY = Integer.parseInt(start[1]);
+		    
+		    String[] goal = br.readLine().split(" ");
+		    
+		    goalX = Integer.parseInt(goal[0]);
+		    goalY = Integer.parseInt(goal[1]);
+		    
+		    String[] hard;
+		    
+		    hardX = new int[8];
+		    hardY = new int[8];
+		    
+		    for (int i = 0; i < 8; i++) {
+		    	hard = br.readLine().split(" ");
+		  
+		    	hardX[i] = Integer.parseInt(hard[0]);
+				hardY[i] = Integer.parseInt(hard[1]);
+		    }
+		    
+		    grid = new char[120][160];
+		
+		    for (int i = 0; i < 120; i++) grid[i] = br.readLine().toCharArray();
 
-		for (int x = 0; x < 160 ; x++) {
-			for (int y = 0; y < 120; y++) {
+		} finally {
+		    br.close();
+		}
+
+		Scene scene = buildGUI(grid);
+		primaryStage.setScene(scene);
+		primaryStage.show();
+
+	}
+	
+	public static Scene buildGUI(char[][] grid) {
+		
+		ShortestPath path = new ShortestPath(grid, new Vertex(startX,startY), new Vertex(goalX, goalY), A_STAR_SEARCH, 1);
+		
+		//System.out.println(path.c(new Vertex(138, 36), new Vertex(139, 36)));
+		long startTime = System.currentTimeMillis();
+		grid = path.AStar();
+		long endTime = System.currentTimeMillis();
+		
+		float duration = endTime - startTime;
+		
+		System.out.println(duration + " milliseconds");
+		
+		BorderPane root = new BorderPane();
+		
+		Tooltip t;
+		
+		for (int y = 0; y < 120; y++){
+			for (int x = 0; x < 160 ; x++) {
 				Rectangle cell = new Rectangle(x*CELLSIZE,y*CELLSIZE,CELLSIZE,CELLSIZE);
 				if (x == startX && y == startY) {
-					cell.setFill(Color.BLUE);
+					cell.setFill(Color.PINK);
 				} else if (x == goalX && y == goalY) {
-					cell.setFill(Color.BLUE);
-				} else if (grid[x][y] == '0') {
+					cell.setFill(Color.GREEN);
+				} else if (grid[y][x] == '0') {
 					cell.setFill(Color.BLACK);
-				} else if (grid[x][y] == '1') {
+				} else if (grid[y][x] == '1') {
 					cell.setFill(Color.WHITE);
-				} else if (grid[x][y] == '2') {
+				} else if (grid[y][x] == '2') {
 					cell.setFill(Color.YELLOW);
-				} else if (grid[x][y] == 'a') {
+				} else if (grid[y][x] == 'a') {
 					cell.setFill(Color.RED);
-				} else if (grid[x][y] == 'b') {
+				} else if (grid[y][x] == 'b') {
 					cell.setFill(Color.ORANGE);
+				}  else if (grid[y][x] == 'c') {
+					cell.setFill(Color.BLUE);
+					t = new Tooltip("x: " + x + "\ny: " + y + "\nf: " + path.f(new Vertex(x,y)) + "\ng: " + path.g(new Vertex(x,y)) + "\nh: " + path.h(new Vertex(x,y)));
+					Tooltip.install(cell, t);
 				}
 				root.getChildren().add(cell);
 			}
 		}
-
-		Scene scene = new Scene(root,160*CELLSIZE,120*CELLSIZE);
-		primaryStage.setScene(scene);
-		primaryStage.show();
-
+		
+		
+		
+		return new Scene(root,160*CELLSIZE,120*CELLSIZE);
 	}
 	
 	public static void generateFile() throws FileNotFoundException, UnsupportedEncodingException {
