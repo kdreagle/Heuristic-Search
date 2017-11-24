@@ -23,6 +23,8 @@ public class Main extends Application {
 	
 	public static final int CELLSIZE = 8;
 	
+	public static final int ITERATIONS = 1;
+	
 	public static final boolean UNIFORM_COST_SEARCH = true;
 	
 	public static final boolean A_STAR_SEARCH = false;
@@ -33,6 +35,12 @@ public class Main extends Application {
 	
 	public static char[][] grid;
 	
+	public static float averageNodesExpanded = 0;
+	
+	public static float averagePathLength = 0;
+	
+	static ShortestPath path;
+	
 	
 	@Override
 	public void start(Stage primaryStage) throws IOException {
@@ -42,36 +50,66 @@ public class Main extends Application {
 		
 		// read first grid from file
 		BufferedReader br = new BufferedReader(new FileReader("grids.txt"));
-		try {
-		    String[] start = br.readLine().split(" ");
-		    
-		    startX = Integer.parseInt(start[0]);
-		    startY = Integer.parseInt(start[1]);
-		    
-		    String[] goal = br.readLine().split(" ");
-		    
-		    goalX = Integer.parseInt(goal[0]);
-		    goalY = Integer.parseInt(goal[1]);
-		    
-		    String[] hard;
-		    
-		    hardX = new int[8];
-		    hardY = new int[8];
-		    
-		    for (int i = 0; i < 8; i++) {
-		    	hard = br.readLine().split(" ");
-		  
-		    	hardX[i] = Integer.parseInt(hard[0]);
-				hardY[i] = Integer.parseInt(hard[1]);
-		    }
-		    
-		    grid = new char[120][160];
 		
-		    for (int i = 0; i < 120; i++) grid[i] = br.readLine().toCharArray();
+		double averageDuration = 0;
+		
+		double averageMemoryUsage = 0;
+		
+		try {
+			
+			String[] start, goal, hard;
+			
+			long startTime, endTime, memoryUsage, duration;
+			
+
+			
+			for (int x = 0 ; x < ITERATIONS ; x++) {
+				
+				
+			    start = br.readLine().split(" ");
+			    
+			    startX = Integer.parseInt(start[0]);
+			    startY = Integer.parseInt(start[1]);
+			    
+			    goal = br.readLine().split(" ");
+			    
+			    goalX = Integer.parseInt(goal[0]);
+			    goalY = Integer.parseInt(goal[1]);
+			    
+			    hardX = new int[8];
+			    hardY = new int[8];
+			    
+			    for (int i = 0; i < 8; i++) {
+			    	hard = br.readLine().split(" ");
+			  
+			    	hardX[i] = Integer.parseInt(hard[0]);
+					hardY[i] = Integer.parseInt(hard[1]);
+			    }
+			    
+			    grid = new char[120][160];
+			
+			    for (int i = 0; i < 120; i++) grid[i] = br.readLine().toCharArray();
+			    
+			    path = new ShortestPath(grid, new Vertex(startX,startY), new Vertex(goalX, goalY), A_STAR_SEARCH, 1);
+			    
+				startTime = System.currentTimeMillis();
+				grid = path.AStar();
+				endTime = System.currentTimeMillis();
+				
+				averageMemoryUsage += Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory(); 
+				
+				averageDuration += endTime - startTime;
+			}
+
 
 		} finally {
 		    br.close();
 		}
+		
+		System.out.println("Average duration: " + averageDuration/ITERATIONS + " milliseconds");
+		System.out.println("Average path length: " + averagePathLength/ITERATIONS);
+		System.out.println("Average nodes expanded: " + averageNodesExpanded/ITERATIONS);
+		System.out.println("Average memory usage: " + averageMemoryUsage/(ITERATIONS * 1000000) + " megabytes");
 
 		Scene scene = buildGUI(grid);
 		primaryStage.setScene(scene);
@@ -80,17 +118,6 @@ public class Main extends Application {
 	}
 	
 	public static Scene buildGUI(char[][] grid) {
-		
-		ShortestPath path = new ShortestPath(grid, new Vertex(startX,startY), new Vertex(goalX, goalY), A_STAR_SEARCH, 1);
-		
-		//System.out.println(path.c(new Vertex(138, 36), new Vertex(139, 36)));
-		long startTime = System.currentTimeMillis();
-		grid = path.AStar();
-		long endTime = System.currentTimeMillis();
-		
-		float duration = endTime - startTime;
-		
-		System.out.println(duration + " milliseconds");
 		
 		BorderPane root = new BorderPane();
 		

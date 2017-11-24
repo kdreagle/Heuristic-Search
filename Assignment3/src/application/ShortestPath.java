@@ -87,10 +87,10 @@ public class ShortestPath {
 		
 		while (!fringe.isEmpty()) {
 			currentVertex = fringe.pop();
-			System.out.println("Memory usage: " + (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory())/1000000 + " mb");
+			
 			
 			if (currentVertex.equals(goal))  {
-				System.out.println("nodes expanded: " + closed.size());
+				Main.averageNodesExpanded += closed.size();
 				return path(currentVertex);
 			}
 			
@@ -172,14 +172,12 @@ public class ShortestPath {
 	
 	char[][] path(Vertex current) {
 		char[][] pathGrid = grid;
-		int pathLength = 0;
 		while (parent.containsKey(current)) {
-			pathLength++;
+			Main.averagePathLength++;
 			pathGrid[current.y][current.x] = 'c';
 			current = parent.get(current);
 			if (current.equals(start)) break;
 		}
-		System.out.println("path length: " + pathLength);
 		return pathGrid;
 	}
 	
@@ -292,7 +290,7 @@ public class ShortestPath {
 	}
 	
 	double f(Vertex v) {
-		return g(v) + w*h4(v);
+		return g(v) + w*h(v);
 	}
 	
 
