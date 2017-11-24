@@ -1,8 +1,12 @@
 # Heuristic-Search
 
 To Do:
-- Read the grids from the grids.txt file into the app
-- Add functionality to the GUI to show values of f, g, and h on mouse click or mouse hover.
-- Implement A\*
-- Cleap up the code a bit (i.e. modularize the blocks of code and create a separate library class)
-- Maybe change the data structure that holds the grid
+- change closed list to binary heap
+- Optimize algorithms (part c) (kinda unsure what exactly to optimize for this)
+- Add 1 or 2 more heuristics (part d)
+- Benchmark results (part e)
+- part f
+- implement sequential heuristic A\* and benchmark it (part g)
+- part h and i
+
+I'm going to write the code for benchmarking the the grids now
