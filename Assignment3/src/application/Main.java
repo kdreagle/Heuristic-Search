@@ -38,9 +38,9 @@ public class Main extends Application {
 	
 	static float averagePathLength = 0;
 	
-	static ShortestPath path;
+	//static ShortestPath path;
 	
-	//static SequentialHeuristic path;
+	static SequentialHeuristic path;
 	
 	
 	@Override
@@ -91,8 +91,8 @@ public class Main extends Application {
 			
 			    for (int i = 0; i < 120; i++) grid[i] = br.readLine().toCharArray();
 			    
-			    path = new ShortestPath(grid, new Vertex(startX,startY), new Vertex(goalX, goalY), A_STAR_SEARCH, 1.5f);
-			    //path = new SequentialHeuristic(grid, new Vertex(startX,startY), new Vertex(goalX, goalY), 1, 1);
+			    //path = new ShortestPath(grid, new Vertex(startX,startY), new Vertex(goalX, goalY), UNIFORM_COST_SEARCH, 1);
+			    path = new SequentialHeuristic(grid, new Vertex(startX,startY), new Vertex(goalX, goalY), 3f, 2f);
 			    
 				startTime = System.currentTimeMillis();
 				grid = path.AStar();
@@ -144,12 +144,8 @@ public class Main extends Application {
 					cell.setFill(Color.ORANGE);
 				} else if (grid[y][x] == 'c') {
 					cell.setFill(Color.BLUE);
-					t = new Tooltip("x: " + x + "\ny: " + y + "\nf: " + path.f(new Vertex(x,y)) + "\ng: " + path.g(new Vertex(x,y)) + "\nh: " + path.h5(new Vertex(x,y)));
-					Tooltip.install(cell, t);
-				} else if (grid[y][x] == 'd') {
-					cell.setFill(Color.LIGHTBLUE);
-					t = new Tooltip("x: " + x + "\ny: " + y + "\nf: " + path.f(new Vertex(x,y)) + "\ng: " + path.g(new Vertex(x,y)) + "\nh: " + path.h5(new Vertex(x,y)));
-					Tooltip.install(cell, t);
+					//t = new Tooltip("x: " + x + "\ny: " + y + "\nf: " + path.f(new Vertex(x,y)) + "\ng: " + path.g(new Vertex(x,y)) + "\nh: " + path.h5(new Vertex(x,y)));
+					//Tooltip.install(cell, t);
 				}
 				root.getChildren().add(cell);
 			}

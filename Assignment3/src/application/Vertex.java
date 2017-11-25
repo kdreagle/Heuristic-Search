@@ -34,6 +34,8 @@ public class Vertex implements Comparable<Vertex> {
 	}
 	
 	public boolean equals(Vertex v) {
+		if (this == null && v == null) return false;
+		if (this == null || v == null) return false;
 		return (v.x == this.x) && (v.y == this.y);
 	}
 
