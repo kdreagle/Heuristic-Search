@@ -6,7 +6,5 @@ To Do:
 - Add 1 or 2 more heuristics (part d)
 - Benchmark results (part e)
 - part f
-- implement sequential heuristic A\* and benchmark it (part g)
+- benchmark sequential heuristic A\* (part g)
 - part h and i
-
-I'm going to write the code for benchmarking the the grids now
