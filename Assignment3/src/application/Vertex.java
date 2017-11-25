@@ -2,10 +2,17 @@ package application;
 
 public class Vertex implements Comparable<Vertex> {
 	short x, y;
+	float f;
 	
 	public Vertex(int x, int y) {
 		this.x = (short) x;
 		this.y = (short) y;
+	}
+	
+	public Vertex(int x, int y, float f) {
+		this.x = (short) x;
+		this.y = (short) y;
+		this.f = f;
 	}
 	
 	@Override
@@ -32,11 +39,12 @@ public class Vertex implements Comparable<Vertex> {
 
 	@Override
 	public int compareTo(Vertex v) {
-		if ((v.x == this.x) && (v.y == this.y)) return 0;
-		return 1;
+		if (this.f == v.f) return 0;
+		if (this.f < v.f) return -1;
+		else return 1;
 	}
 	
 	public String toString() {
-		return x + "," + y;
+		return x + "," + y + "  =  " + f;
 	}
 }

@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.PriorityQueue;
 
+@SuppressWarnings("serial")
 public class Fringe extends PriorityQueue<Vertex> {
 	public Map<Vertex,Float> map;
 	
@@ -19,22 +20,11 @@ public class Fringe extends PriorityQueue<Vertex> {
 	}
 	
 	Vertex pop() {
-		float min = Float.POSITIVE_INFINITY;
-		Vertex minVertex = null;
-		for (Vertex v : map.keySet()) {
-			if (map.get(v) <= min)  {
-				min = map.get(v);
-				minVertex = v;
-			}
-		}
+		Vertex minVertex = this.peek();
 		remove(minVertex);
 		return minVertex;
 	}
 	
-	void remove(Vertex v) {
-		map.remove(v);
-		super.remove(v);
-	}
 	
 	float minKey() {
 		return Collections.min(map.values());

@@ -2,19 +2,19 @@ package application;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map;
-import java.util.PriorityQueue;
+import java.util.Stack;
 
 public class ShortestPath {
 	Vertex start, goal;
 	char[][] grid;
+	char[][] pathGrid;
 	HashMap<Vertex,Float> g;
 	HashMap<Vertex,Vertex> parent;
+	Stack<Vertex> closed;
 	boolean uniformCostSearch;
 	float w;
 	
-	// used for heuristic 5
-	float h = 0;
+	static final float root2 = (float) Math.sqrt(2);
 	
 	public ShortestPath(char[][] grid, Vertex start, Vertex goal, boolean uniformCostSearch, float w) {
 		this.grid = grid;
@@ -24,6 +24,7 @@ public class ShortestPath {
 		this.w = w;
 		g = new HashMap<Vertex,Float>();
 		parent = new HashMap<Vertex,Vertex>();
+		closed = new Stack<Vertex>();
 	}
 	
 	/**
@@ -34,22 +35,21 @@ public class ShortestPath {
 		
 		Vertex currentVertex;
 		
-		ArrayList<Vertex> closed = new ArrayList<Vertex>();
-		
 		Fringe fringe = new Fringe();
 		
 		g.put(start, 0.0f);
 		
 		if (uniformCostSearch) 
-			fringe.insert(start, g(start));
-		else 
-			fringe.insert(start, f(start));
+			start.f = g(start);
+		else
+			start.f = f(start);
+		
+		fringe.add(start);
 		
 		parent.put(start, start);
 		
 		while (!fringe.isEmpty()) {
 			currentVertex = fringe.pop();
-			
 			
 			if (currentVertex.equals(goal))  {
 				Main.averageNodesExpanded += closed.size();
@@ -57,7 +57,7 @@ public class ShortestPath {
 			}
 			
 			if (!closed.contains(currentVertex)) 
-				closed.add(currentVertex);
+				closed.push(currentVertex);
 			
 			for (Vertex s : succ(currentVertex)) {
 				if (!closed.contains(s)) { 
@@ -72,9 +72,10 @@ public class ShortestPath {
 						if (fringe.contains(s)) 
 							fringe.remove(s);
 						if (uniformCostSearch)
-							fringe.insert(s, g(s));
+							s.f = g(s);
 						else
-							fringe.insert(s, f(s));
+							s.f = f(s);
+						fringe.add(s);
 					}
 				}
 			}
@@ -84,13 +85,16 @@ public class ShortestPath {
 	}
 	
 	char[][] path(Vertex current) {
-		char[][] pathGrid = grid;
+		pathGrid = grid;
+		int pathLength = 0;
 		while (parent.containsKey(current)) {
-			Main.averagePathLength++;
+			pathLength++;
 			pathGrid[current.y][current.x] = 'c';
 			current = parent.get(current);
 			if (current.equals(start)) break;
 		}
+		
+		Main.averagePathLength += pathLength*pathLength/(h3(start));
 
 		return pathGrid;
 	}
@@ -153,28 +157,21 @@ public class ShortestPath {
 		return 10;
 	}
 	
-	/**
-	 * Example heuristic given in project description
-	 * @param v Current vertex
-	 * @return Distance from v to goal vertex
-	 */
-	float h(Vertex v) {
-		int dx = Math.abs(v.x - goal.x);
-		int dy = Math.abs(v.y - goal.y);
-		int min = Integer.min(dx, dy);
-		int max = Integer.max(dx, dy);
-		return (float) (Math.sqrt(2) * min + max - min);
-	}
+
+	
+
+	
+
 	
 	/**
-	 * Euclidean distance heuristic
+	 * Diagonal distance heuristic
 	 * @param v Current vertex
 	 * @return Distance from v to goal vertex
 	 */
-	float h2(Vertex v) {
+	float h1(Vertex v) {
 		int dx = Math.abs(v.x - goal.x);
 		int dy = Math.abs(v.y - goal.y);
-		return (float) Math.sqrt(dx*dx + dy*dy);
+		return (float) (dx + dy + (root2 - 2) * Math.min(dx, dy))*0.25f;
 	}
 	
 	/**
@@ -182,10 +179,21 @@ public class ShortestPath {
 	 * @param v Current vertex
 	 * @return Distance from v to goal vertex
 	 */
+	float h2(Vertex v) {
+		int dx = Math.abs(v.x - goal.x);
+		int dy = Math.abs(v.y - goal.y);
+		return (float) (dx + dy + (root2 - 2) * Math.min(dx, dy));
+	}
+	
+	/**
+	 * Euclidean distance heuristic
+	 * @param v Current vertex
+	 * @return Distance from v to goal vertex
+	 */
 	float h3(Vertex v) {
 		int dx = Math.abs(v.x - goal.x);
 		int dy = Math.abs(v.y - goal.y);
-		return (float) (dx + dy + (Math.sqrt(2) - 2) * Math.min(dx, dy));
+		return (float) Math.sqrt(dx*dx + dy*dy);
 	}
 	
 	/**
@@ -199,14 +207,39 @@ public class ShortestPath {
 		return dx + dy;
 	}
 	
+	/**
+	 * Squared Euclidean distance heuristic (seems like the best one)
+	 * @param v Current vertex
+	 * @return Distance from v to goal vertex
+	 */
 	float h5(Vertex v) {
-		int dx1 = v.x - goal.x;
-		int dy1 = v.y - goal.y;
-		int dx2 = start.x - goal.x;
-		int dy2 = start.y - goal.y;
-		int cross = Math.abs(dx1*dy2 - dx2*dy1);
-		h += cross*0.001;
-		return h;
+		int dx = Math.abs(v.x - goal.x);
+		int dy = Math.abs(v.y - goal.y);
+		return dx*dx + dy*dy;
+	}
+	
+	/**
+	 * Euclidean distance heuristic
+	 * @param v Current vertex
+	 * @return Distance from v to goal vertex
+	 */
+	float h6(Vertex v) {
+		int dx = Math.abs(v.x - goal.x);
+		int dy = Math.abs(v.y - goal.y);
+		return (float) Math.sqrt(dx*dx + dy*dy) * 0.25f;
+	}
+	
+	/**
+	 * Example heuristic given in project description
+	 * @param v Current vertex
+	 * @return Distance from v to goal vertex
+	 */
+	float h7(Vertex v) {
+		int dx = Math.abs(v.x - goal.x);
+		int dy = Math.abs(v.y - goal.y);
+		int min = Integer.min(dx, dy);
+		int max = Integer.max(dx, dy);
+		return (float) (Math.sqrt(2) * min + max - min);
 	}
 
 	float g(Vertex v) {
@@ -214,7 +247,7 @@ public class ShortestPath {
 	}
 	
 	float f(Vertex v) {
-		return g(v) + w*h4(v);
+		return g(v) + w*h5(v);
 	}
 	
 
