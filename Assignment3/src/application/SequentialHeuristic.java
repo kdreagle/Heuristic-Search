@@ -2,97 +2,124 @@ package application;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map;
-import java.util.PriorityQueue;
 
-public class ShortestPath {
-	Vertex start, goal;
+
+public class SequentialHeuristic {
 	char[][] grid;
-	HashMap<Vertex,Float> g;
-	HashMap<Vertex,Vertex> parent;
-	boolean uniformCostSearch;
-	float w;
+	Vertex start, goal;
+	float w1, w2;
+	int n = 4;
+	HashMap[] g;
+	HashMap[] bp;
+	Fringe[] fringe;
+	ArrayList[] closed;
 	
-	// used for heuristic 5
 	float h = 0;
 	
-	public ShortestPath(char[][] grid, Vertex start, Vertex goal, boolean uniformCostSearch, float w) {
+	public SequentialHeuristic(char[][] grid, Vertex start, Vertex goal,  float w1, float w2) {
 		this.grid = grid;
 		this.start = start;
 		this.goal = goal;
-		this.uniformCostSearch = uniformCostSearch;
-		this.w = w;
-		g = new HashMap<Vertex,Float>();
-		parent = new HashMap<Vertex,Vertex>();
+		this.w1 = w1;
+		this.w2 = w2;
+		g = new HashMap[n];
+		bp = new HashMap[n];
+		fringe = new Fringe[n];
+		closed = new ArrayList[n];
 	}
 	
-	/**
-	 * Project description implementation of A*
-	 * @return
-	 */
+	@SuppressWarnings("unchecked")
 	public char[][] AStar() {
-		
-		Vertex currentVertex;
-		
-		ArrayList<Vertex> closed = new ArrayList<Vertex>();
-		
-		Fringe fringe = new Fringe();
-		
-		g.put(start, 0.0f);
-		
-		if (uniformCostSearch) 
-			fringe.insert(start, g(start));
-		else 
-			fringe.insert(start, f(start));
-		
-		parent.put(start, start);
-		
-		while (!fringe.isEmpty()) {
-			currentVertex = fringe.pop();
+		int i;
+		Vertex s;
+		for (i = 0; i < n ; i++ ) {
+			fringe[i] = new Fringe();
+			closed[i] = new ArrayList<Vertex>();
+			g[i] = new HashMap<Vertex,Float>();
+			bp[i] = new HashMap<Vertex,Vertex>();
 			
+			g[i].put(start, 0f);
+			g[i].put(goal, Float.POSITIVE_INFINITY);
 			
-			if (currentVertex.equals(goal))  {
-				Main.averageNodesExpanded += closed.size();
-				return path(currentVertex);
-			}
+			bp[i].put(start, null);
+			bp[i].put(goal, null);
 			
-			if (!closed.contains(currentVertex)) 
-				closed.add(currentVertex);
-			
-			for (Vertex s : succ(currentVertex)) {
-				if (!closed.contains(s)) { 
-					if (!fringe.contains(s)){
-						g.put(s, Float.POSITIVE_INFINITY);
-						parent.put(s, null);
+			fringe[i].insert(start, key(start,i));
+		}
+		
+		while (fringe[0].minKey() < Float.POSITIVE_INFINITY) {
+			for (i = 1; i < n; i++ ) {
+				if (fringe[i].minKey() <= w2 * fringe[0].minKey()) {
+					if ((float)g[i].get(goal) <= fringe[i].minKey()) {
+						if ((float)g[i].get(goal) < Float.POSITIVE_INFINITY) return path();
+					} else {
+						s = fringe[i].top();
+						expandStates(s,i);
+						closed[i].add(s);
 					}
-					// update vertex
-					if (g(currentVertex) + c(currentVertex,s) < g(s)) {
-						g.put(s, g(currentVertex)+c(currentVertex,s));
-						parent.put(s, currentVertex);
-						if (fringe.contains(s)) 
-							fringe.remove(s);
-						if (uniformCostSearch)
-							fringe.insert(s, g(s));
-						else
-							fringe.insert(s, f(s));
+				} else {
+					if ((float)g[0].get(goal) <= fringe[0].minKey()) {
+						if ((float)g[0].get(goal) < Float.POSITIVE_INFINITY) return path();
+					} else {
+						s = fringe[0].top();
+						expandStates(s,0);
+						closed[0].add(s);
 					}
 				}
 			}
 		}
-		
 		return null;
 	}
 	
-	char[][] path(Vertex current) {
+	
+	char[][] path() {
 		char[][] pathGrid = grid;
-		while (parent.containsKey(current)) {
-			Main.averagePathLength++;
-			pathGrid[current.y][current.x] = 'c';
-			current = parent.get(current);
-			if (current.equals(start)) break;
+		Vertex current = goal;
+		while (current != start) {
+			
+			if (bp[0].get(current) != null) {
+				current = (Vertex) bp[0].get(current);
+				pathGrid[current.y][current.x] = 'c';
+			}
+			if (bp[1].get(current) != null) {
+				current = (Vertex) bp[1].get(current);
+				pathGrid[current.y][current.x] = 'c';
+			}
+			if (bp[2].get(current) != null) {
+				current = (Vertex) bp[2].get(current);
+				pathGrid[current.y][current.x] = 'c';
+			}
+			if (bp[3].get(current) != null) {
+				current = (Vertex) bp[3].get(current);
+				pathGrid[current.y][current.x] = 'c';
+			}
 		}
 
 		return pathGrid;
+	}
+	
+	float key(Vertex v, int i) {
+		if (i == 0) return (float)g[i].get(v) + w1*h(v);
+		if (i == 1) return (float)g[i].get(v) + w1*h2(v);
+		if (i == 2) return (float)g[i].get(v) + w1*h3(v);
+		if (i == 3) return (float)g[i].get(v) + w1*h4(v);
+		return 0;
+	}
+	
+	void expandStates(Vertex v, int i) {
+		fringe[i].remove(v);
+		for (Vertex s: succ(v)) {
+			if (!g[i].containsKey(s)) {
+				g[i].put(s, Float.POSITIVE_INFINITY);
+				bp[i].put(s,null);
+			}
+			if ((float)g[i].get(s) > (float)g[i].get(v) + c(v,s)) {
+				g[i].put(s, (float)g[i].get(v) + c(v,s));
+				bp[i].put(s, v);
+				if (!closed[i].contains(s))
+					fringe[i].insert(s, key(s,i));
+			}
+		}
 	}
 	
 	ArrayList<Vertex> succ(Vertex v) {
@@ -153,11 +180,6 @@ public class ShortestPath {
 		return 10;
 	}
 	
-	/**
-	 * Example heuristic given in project description
-	 * @param v Current vertex
-	 * @return Distance from v to goal vertex
-	 */
 	float h(Vertex v) {
 		int dx = Math.abs(v.x - goal.x);
 		int dy = Math.abs(v.y - goal.y);
@@ -208,14 +230,4 @@ public class ShortestPath {
 		h += cross*0.001;
 		return h;
 	}
-
-	float g(Vertex v) {
-		return g.get(v);
-	}
-	
-	float f(Vertex v) {
-		return g(v) + w*h4(v);
-	}
-	
-
 }

@@ -21,25 +21,29 @@ import javafx.scene.shape.Rectangle;
 
 public class Main extends Application {
 	
-	public static final int CELLSIZE = 8;
+	static final int CELLSIZE = 8;
 	
-	public static final int ITERATIONS = 1;
+	static final int ITERATIONS = 1;
 	
-	public static final boolean UNIFORM_COST_SEARCH = true;
+	static final boolean UNIFORM_COST_SEARCH = true;
 	
-	public static final boolean A_STAR_SEARCH = false;
+	static final boolean A_STAR_SEARCH = false;
 	
-	public static int startX, startY, goalX, goalY;
+	public static short startX, startY, goalX, goalY;
 	
-	public static int[] hardX, hardY;
+	static int[] hardX;
+
+	static int[] hardY;
 	
-	public static char[][] grid;
+	static char[][] grid;
 	
-	public static float averageNodesExpanded = 0;
+	static float averageNodesExpanded = 0;
 	
-	public static float averagePathLength = 0;
+	static float averagePathLength = 0;
 	
-	static ShortestPath path;
+	//static ShortestPath path;
+	
+	static SequentialHeuristic path;
 	
 	
 	@Override
@@ -68,13 +72,13 @@ public class Main extends Application {
 				
 			    start = br.readLine().split(" ");
 			    
-			    startX = Integer.parseInt(start[0]);
-			    startY = Integer.parseInt(start[1]);
+			    startX = Short.parseShort(start[0]);
+			    startY = Short.parseShort(start[1]);
 			    
 			    goal = br.readLine().split(" ");
 			    
-			    goalX = Integer.parseInt(goal[0]);
-			    goalY = Integer.parseInt(goal[1]);
+			    goalX = Short.parseShort(goal[0]);
+			    goalY = Short.parseShort(goal[1]);
 			    
 			    hardX = new int[8];
 			    hardY = new int[8];
@@ -82,15 +86,16 @@ public class Main extends Application {
 			    for (int i = 0; i < 8; i++) {
 			    	hard = br.readLine().split(" ");
 			  
-			    	hardX[i] = Integer.parseInt(hard[0]);
-					hardY[i] = Integer.parseInt(hard[1]);
+			    	hardX[i] = Short.parseShort(hard[0]);
+					hardY[i] = Short.parseShort(hard[1]);
 			    }
 			    
 			    grid = new char[120][160];
 			
 			    for (int i = 0; i < 120; i++) grid[i] = br.readLine().toCharArray();
 			    
-			    path = new ShortestPath(grid, new Vertex(startX,startY), new Vertex(goalX, goalY), A_STAR_SEARCH, 1);
+			    //path = new ShortestPath(grid, new Vertex(startX,startY), new Vertex(goalX, goalY), A_STAR_SEARCH, 1);
+			    path = new SequentialHeuristic(grid, new Vertex(startX,startY), new Vertex(goalX, goalY), 1, 1);
 			    
 				startTime = System.currentTimeMillis();
 				grid = path.AStar();
@@ -123,8 +128,8 @@ public class Main extends Application {
 		
 		Tooltip t;
 		
-		for (int y = 0; y < 120; y++){
-			for (int x = 0; x < 160 ; x++) {
+		for (short y = 0; y < 120; y++){
+			for (short x = 0; x < 160 ; x++) {
 				Rectangle cell = new Rectangle(x*CELLSIZE,y*CELLSIZE,CELLSIZE,CELLSIZE);
 				if (x == startX && y == startY) {
 					cell.setFill(Color.PINK);
@@ -142,8 +147,8 @@ public class Main extends Application {
 					cell.setFill(Color.ORANGE);
 				}  else if (grid[y][x] == 'c') {
 					cell.setFill(Color.BLUE);
-					t = new Tooltip("x: " + x + "\ny: " + y + "\nf: " + path.f(new Vertex(x,y)) + "\ng: " + path.g(new Vertex(x,y)) + "\nh: " + path.h(new Vertex(x,y)));
-					Tooltip.install(cell, t);
+					//t = new Tooltip("x: " + x + "\ny: " + y + "\nf: " + path.f(new Vertex(x,y)) + "\ng: " + path.g(new Vertex(x,y)) + "\nh: " + path.h(new Vertex(x,y)));
+					//Tooltip.install(cell, t);
 				}
 				root.getChildren().add(cell);
 			}
@@ -159,8 +164,8 @@ public class Main extends Application {
 		
 		PrintWriter writer = new PrintWriter("grids.txt", "UTF-8");
 		
-		// write 5 grids to the
-		for (int i = 0; i < 5; i++) {
+		// only needs to generate 5 grids, but for some reason the last grid is never completely written to the file
+		for (int i = 0; i < 6; i++) {
 			generateGrid();
 			for (int j = 0; j < 10; j++) {
 				generateStartGoal();
@@ -411,64 +416,76 @@ public class Main extends Application {
 		
 		Random random = new Random();
 		
-		// generate the start cell
-		int i = random.nextInt(4);
-		if (i == 0) {
-			do {
-				startX = random.nextInt(20);
-				startY = random.nextInt(120);
-			} while(grid[startX][startY] == '0');
-		} else if (i == 1) {
-			do {
-				startX = random.nextInt(160);
-				startY = random.nextInt(20);
-			} while(grid[startX][startY] == '0');
-		} else if (i == 2) {
-			do {
-				startX = random.nextInt(20) + 140;
-				startY = random.nextInt(120);
-			} while(grid[startX][startY] == '0');
-		} else if (i == 3) {
-			do {
-				startX = random.nextInt(160);
-				startY = random.nextInt(20) + 100;
-			} while(grid[startX][startY] == '0');
-		}
 		
-		// generate the goal cell
-		i = random.nextInt(4);
-		if (i == 0) {
-			do {
-				goalX = random.nextInt(20);
-				goalY = random.nextInt(120);
-			} while(grid[goalX][goalY] == '0' && 
-					Math.abs(startX - goalX) < 100 &&
-							Math.abs(startY - goalY) < 100 && 
-							Math.sqrt(Math.pow(startX - goalX, 2.0) - Math.pow((startY - goalY), 2.0)) < 100 );
-		} else if (i == 1) {
-			do {
-				goalX = random.nextInt(160);
-				goalY = random.nextInt(20);
-			} while(grid[goalX][goalY] == '0' && 
-					Math.abs(startX - goalX) < 100 &&
-							Math.abs(startY - goalY) < 100 && 
-							Math.sqrt(Math.pow(startX - goalX, 2.0) - Math.pow((startY - goalY), 2.0)) < 100 );
-		} else if (i == 2) {
-			do {
-				goalX = random.nextInt(20) + 140;
-				goalY = random.nextInt(120);
-			} while(grid[goalX][goalY] == '0' && 
-					Math.abs(startX - goalX) < 100 &&
-							Math.abs(startY - goalY) < 100 && 
-							Math.sqrt(Math.pow(startX - goalX, 2.0) - Math.pow((startY - goalY), 2.0)) < 100 );
-		} else if (i == 3) {
-			do {
-				goalX = random.nextInt(160);
-				goalY = random.nextInt(20) + 100;
-			} while(grid[goalX][goalY] == '0' && 
-					Math.abs(startX - goalX) < 100 &&
-							Math.abs(startY - goalY) < 100 && 
-							Math.sqrt(Math.pow(startX - goalX, 2.0) - Math.pow((startY - goalY), 2.0)) < 100 );
+		int i, dx, dy, counter;
+		boolean restart = true;
+		
+		while (restart) {
+			// generate the start cell
+			i = random.nextInt(4);
+			if (i == 0) {
+				do {
+					startX = (short) random.nextInt(20);
+					startY = (short) random.nextInt(120);
+				} while(grid[startX][startY] == '0');
+			} else if (i == 1) {
+				do {
+					startX = (short) random.nextInt(160);
+					startY = (short) random.nextInt(20);
+				} while(grid[startX][startY] == '0');
+			} else if (i == 2) {
+				do {
+					startX = (short) (random.nextInt(20) + 140);
+					startY = (short) random.nextInt(120);
+				} while(grid[startX][startY] == '0');
+			} else if (i == 3) {
+				do {
+					startX = (short) random.nextInt(160);
+					startY = (short) (random.nextInt(20) + 100);
+				} while(grid[startX][startY] == '0');
+			}
+			
+			// generate the goal cell
+			i = random.nextInt(4);
+			
+			counter = 0;
+			
+			if (i == 0) {
+				do {
+					goalX = (short) random.nextInt(20);
+					goalY = (short) random.nextInt(120);
+					dx = startX - goalX;
+					dy = startY - goalY;
+					if (counter++ > 50 ) break;
+				} while(grid[goalX][goalY] == '0' || Math.sqrt(dx*dx + dy*dy) < 100);
+			} else if (i == 1) {
+				do {
+					goalX = (short) random.nextInt(160);
+					goalY = (short) random.nextInt(20);
+					dx = startX - goalX;
+					dy = startY - goalY;
+					if (counter++ > 50 ) break;
+				} while(grid[goalX][goalY] == '0' || Math.sqrt(dx*dx + dy*dy) < 100);
+			} else if (i == 2) {
+				do {
+					goalX = (short) (random.nextInt(20) + 140);
+					goalY = (short) random.nextInt(120);
+					dx = startX - goalX;
+					dy = startY - goalY;
+					if (counter++ > 50 ) break;
+				} while(grid[goalX][goalY] == '0' || Math.sqrt(dx*dx + dy*dy) < 100);
+			} else if (i == 3) {
+				do {
+					goalX = (short) random.nextInt(160);
+					goalY = (short) (random.nextInt(20) + 100);
+					dx = startX - goalX;
+					dy = startY - goalY;
+					if (counter++ > 50 ) break;
+				} while(grid[goalX][goalY] == '0' || Math.sqrt(dx*dx + dy*dy) < 100);
+			}
+			
+			if (counter <= 50) restart = false;
+			counter = 0;
 		}
 	}
 	

@@ -1,11 +1,11 @@
 package application;
 
 public class Vertex implements Comparable<Vertex> {
-	int x, y;
+	short x, y;
 	
 	public Vertex(int x, int y) {
-		this.x = x;
-		this.y = y;
+		this.x = (short) x;
+		this.y = (short) y;
 	}
 	
 	@Override
