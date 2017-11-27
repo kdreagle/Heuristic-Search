@@ -102,7 +102,7 @@ public class SequentialHeuristic {
 		if (i == 1) return (float)g[i].get(v) + w1*h2(v);
 		if (i == 2) return (float)g[i].get(v) + w1*h3(v);
 		if (i == 3) return (float)g[i].get(v) + w1*h4(v);
-		if (i == 4) return (float)g[i].get(v) + w1*h4(v);
+		if (i == 4) return (float)g[i].get(v) + w1*h5(v);
 		return 0;
 	}
 	

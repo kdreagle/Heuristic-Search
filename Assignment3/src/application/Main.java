@@ -8,9 +8,11 @@ import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.util.Random;
 import javafx.application.Application;
+import javafx.fxml.FXMLLoader;
 import javafx.stage.Stage;
 import javafx.scene.Scene;
 import javafx.scene.control.Tooltip;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
@@ -42,9 +44,19 @@ public class Main extends Application {
 	
 	static SequentialHeuristic path;
 	
-	
 	@Override
 	public void start(Stage primaryStage) throws IOException {
+		
+		AnchorPane root = FXMLLoader.load(getClass().getResource("view.fxml"));
+		
+
+		
+		Scene scene = new Scene(root,1500,1000);
+		primaryStage.setScene(scene);
+		primaryStage.show();
+	}
+	
+	public void start(Stage primaryStage,int hi) throws IOException {
 		
 		// only needs to be run once
 		//generateFile();
@@ -92,7 +104,7 @@ public class Main extends Application {
 			    for (int i = 0; i < 120; i++) grid[i] = br.readLine().toCharArray();
 			    
 			    //path = new ShortestPath(grid, new Vertex(startX,startY), new Vertex(goalX, goalY), UNIFORM_COST_SEARCH, 1);
-			    path = new SequentialHeuristic(grid, new Vertex(startX,startY), new Vertex(goalX, goalY), 3f, 2f);
+			    path = new SequentialHeuristic(grid, new Vertex(startX,startY), new Vertex(goalX, goalY), 1.25f, 2f);
 			    
 				startTime = System.currentTimeMillis();
 				grid = path.AStar();

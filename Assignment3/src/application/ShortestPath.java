@@ -247,7 +247,7 @@ public class ShortestPath {
 	}
 	
 	float f(Vertex v) {
-		return g(v) + w*h3(v);
+		return g(v) + w*h5(v);
 	}
 	
 

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.text.Text?>
+
+<AnchorPane xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.ViewController">
+   <children>
+      <AnchorPane fx:id="root" prefHeight="1000.0" prefWidth="1500.0">
+         <children>
+            <AnchorPane fx:id="gridWorld" layoutX="200.0" layoutY="20.0" prefHeight="960.0" prefWidth="1280.0" />
+            <TextField fx:id="w" layoutX="42.0" layoutY="41.0" prefHeight="25.0" prefWidth="40.0" text="1" />
+            <Text layoutX="20.0" layoutY="58.0" strokeType="OUTSIDE" strokeWidth="0.0" text="w" />
+            <Button layoutX="48.0" layoutY="76.0" mnemonicParsing="false" onAction="#aStar" text="A*" />
+            <Text layoutX="17.0" layoutY="167.0" strokeType="OUTSIDE" strokeWidth="0.0" text="w1" />
+            <Text layoutX="17.0" layoutY="200.0" strokeType="OUTSIDE" strokeWidth="0.0" text="w2" />
+            <TextField fx:id="w2" layoutX="45.0" layoutY="186.0" prefHeight="25.0" prefWidth="40.0" text="1" />
+            <TextField fx:id="w1" layoutX="45.0" layoutY="150.0" prefHeight="25.0" prefWidth="40.0" text="1" />
+            <Button layoutX="22.0" layoutY="114.0" mnemonicParsing="false" onAction="#uniformCost" text="Uniform Cost" />
+            <Button layoutX="16.0" layoutY="221.0" mnemonicParsing="false" onAction="#sequentialHeuristic" text="Sequential Heuristic" />
+            <Button layoutX="29.0" layoutY="269.0" mnemonicParsing="false" onAction="#newGrid" text="New Grid" />
+            <Button layoutX="17.0" layoutY="323.0" mnemonicParsing="false" onAction="#ABenchmark" text="Benchmark 50 grids A*" />
+            <Button layoutX="17.0" layoutY="364.0" mnemonicParsing="false" onAction="#SHBenchmark" text="Benchmark 50 grids SH" />
+         </children></AnchorPane>
+   </children>
+</AnchorPane>
